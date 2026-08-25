@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^14.27.0"
+    "discord-webhook-node": "^1.1.8",
+    "discord.js": "^14.27.0",
+    "fs": "^0.0.1-security"
   }
 }

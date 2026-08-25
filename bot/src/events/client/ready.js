@@ -1,0 +1,49 @@
+const config = require('../../config/config')
+const { Webhook } = require('discord-webhook-node');
+
+module.exports = {
+    name: 'ready',
+    once: true,
+
+    async execute(client) {
+        const startTimestamp = Date.now();
+
+        console.log(
+            `${client.user.username} is Starting`
+        );
+
+        const endTimestamp = Date.now();
+        const elapsed = endTimestamp - startTimestamp;
+
+        console.log(
+            `${client.user.username} Finished Starting at ` +
+            `${new Date().toLocaleString()} (${elapsed} ms)`
+        );
+
+        console.log(
+            '-----------------------------------------------------------'
+        );
+
+        const url = config.bot.webhookUrl;
+
+        if (url) {
+            try {
+                const hook = new Webhook(url);
+
+                hook.setUsername('Voxel Logs');
+
+                const webhookMessage =
+                    `${client.user.username} Finished Starting at ` +
+                    `${new Date().toLocaleString()} (${elapsed} ms)\n` +
+                    `The Current Ping Time is As Follows:\n` +
+                    `API Latency: ${client.ws.ping}ms`;
+                
+                console.log(webhookMessage);
+
+                await hook.info(webhookMessage);
+            } catch (error) {
+                console.error('Error occurred while sending webhook message:', error);
+            }
+        }
+    }
+}

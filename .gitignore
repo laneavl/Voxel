@@ -8,6 +8,4 @@ Dockerfile
 docker-compose.yml
 bot/src/commands
 bot/src/custom
-bot/src/events
-bot/src/functions
 bot/src/utility
