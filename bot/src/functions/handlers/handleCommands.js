@@ -43,6 +43,7 @@ module.exports = (client) => {
                     command
                 );
 
+
                 client.commandArray.push(
                     command.data
                 );

@@ -51,3 +51,4 @@ getConnection.pool = pool;
 getConnection.checkConnection = checkDatabaseConnection;
 
 module.exports = getConnection;
+
