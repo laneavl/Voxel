@@ -1,0 +1,21 @@
+services:
+  voxel-app:
+    build: ./bot
+    container_name: voxel-app
+    restart: unless-stopped
+
+    environment:
+      INTERNAL_API_KEY: "internal_api_key_here"
+      APP_API_PORT: "3002"
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    volumes:
+      - ./bot:/usr/src/app/
+      - /usr/src/app/node_modules
+
+

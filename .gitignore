@@ -1,0 +1,13 @@
+bot/node_modules/*
+bot/node_modules
+bot/src/config/config.js
+bot/src/custom/reddit-cache.json
+bot/src/custom/rss-cache.json
+bot/src/custom/welcome-config.json
+Dockerfile
+docker-compose.yml
+bot/src/commands
+bot/src/custom
+bot/src/events
+bot/src/functions
+bot/src/utility
