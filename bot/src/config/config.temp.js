@@ -29,6 +29,7 @@ module.exports = {
     },
 
     server: {
+        botApiPort: "YOUR_BOT_API_PORT", // this defaults to 3002
         botApiUrl: "YOUR_BOT_API_URL",
         internalApiKey: "YOUR_INTERNAL_API_KEY"
     },

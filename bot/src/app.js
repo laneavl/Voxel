@@ -1,5 +1,6 @@
 const config = require('./config/config.js');
 const fs = require('fs');
+const startApiServer = require('./utility/api/api_server')
 
 const {
     Client,
@@ -28,6 +29,10 @@ async function startBot() {
             Partials.Channel
         ]
     });
+
+    // Command collections
+    client.commands = new Collection();
+    client.commandArray = [];
 
     const functionDirs = fs.readdirSync('./src/functions');
     
@@ -88,11 +93,13 @@ async function startBot() {
             );
         }
     }
-    
 
+    // Initialize commands and events
+    client.handleCommands();
     client.events();
 
     await client.login(config.bot.token);
+    startApiServer(client);
 }
 
 startBot().catch(err => {

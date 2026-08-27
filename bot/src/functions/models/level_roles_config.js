@@ -53,7 +53,7 @@ async function get(guildId) {
             [guildId]
         );
 
-        return rows[0] || null;
+        return rows;
     } finally {
         if (connection) {
             connection.release();
