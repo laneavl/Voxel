@@ -6,7 +6,6 @@ bot/src/custom/rss-cache.json
 bot/src/custom/welcome-config.json
 Dockerfile
 docker-compose.yml
-bot/src/commands
 bot/src/custom
 bot/src/utility
 dashboard
