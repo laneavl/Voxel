@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { splitMessage, processAIMessage } = require('../../utility/ai/ai_control');
+const feature_config = require("../../functions/models/feature_config");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,6 +20,12 @@ module.exports = {
         const guildname = interaction.guild.name;
         const guildId = interaction.guild ? interaction.guild.id : 'DM';
 
+        const enableConfig = await feature_config.get(interaction.guild.id);
+
+        if (!enableConfig || enableConfig.ai_chat !== 1) {
+            return;
+        }
+
         await interaction.deferReply();
 
         try {
@@ -34,7 +41,7 @@ module.exports = {
             console.error('AI ERROR:', error);
             if (error.status === 503) {
                 await interaction.editReply(
-                    'Gemini is currently experiencing high demand. Please try again later'
+                    'OpenAI is currently experiencing high demand. Please try again later'
                 );
             } else if (error.status === 429) {
                 await interaction.editReply(

@@ -16,7 +16,7 @@ async function aiDMMessage (message) {
                 'DM'
             );
 
-            const chunks = splitMessage(responseText);
+            const chunks = await splitMessage(responseText);
             for (const chunk of chunks) {
                 await message.reply(chunk);
             };
@@ -29,7 +29,7 @@ async function aiDMMessage (message) {
             if (error.status === 503) {
 
                 await message.reply(
-                    'Gemini is currently experiencing high demand. Please try again in a moment.'
+                    'OpenAI is currently experiencing high demand. Please try again in a moment.'
                 );
 
 
@@ -107,7 +107,7 @@ async function aiGuildMessage (message) {
                         message.guild.id
                     );
 
-                    const chunks = splitMessage(responseText);
+                    const chunks = await splitMessage(responseText);
 
                     for (const chunk of chunks) {
                         await message.reply(chunk);

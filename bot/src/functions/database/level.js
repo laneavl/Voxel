@@ -66,7 +66,7 @@ module.exports = async (client) => {
             const minXP = Number(levelConfig.min_xp);
             const maxXP = Number(levelConfig.max_xp);
 
-            const xpToGive = getRandomXP(minXP, maxXP);
+            const xpToGive = getRandomXp(minXP, maxXP);
 
             // Get the user's current level data
 
@@ -263,10 +263,10 @@ async function assignLevelRoles(
 
 // Generate a random XP amount between min and max.
 function getRandomXp(minXP, maxXP) {
-    min = Math.ceil(Number(min));
-    max = Math.floor(Number(max));
+    minXP = Math.ceil(Number(minXP));
+    maxXP = Math.floor(Number(maxXP));
 
     return Math.floor(
-        Math.random() * (max - min + 1)
-    ) + min;
+        Math.random() * (maxXP - minXP + 1)
+    ) + minXP;
 }

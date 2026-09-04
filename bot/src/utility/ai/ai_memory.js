@@ -1,9 +1,9 @@
 const getConnection = require('../../functions/database/connectDatabase');
-const { GoogleGenAI } = require('@google/genai');
+const OpenAI = require('openai');
 const config = require('../../config/config');
 
-const gemini = new GoogleGenAI({
-    apiKey: config.bot.geminiApiKey
+const openai = new OpenAI({
+    apiKey: config.bot.openAiApiKey
 });
 
 // Get the user's global long-term memories
@@ -104,115 +104,129 @@ async function extractMemories(
                 : 'None';
 
         const memoryResponse =
-            await gemini.models.generateContent({
-                model: 'gemini-3.5-flash-lite',
-                config: {
-                    systemInstruction: `
-                        You are Voxels's long-term memory manager.
-                        Your job is to identify useful, persistent facts about the user.                       
-                        Only remember information that is genuinely useful in future conversations.                       
-                        
-                        GOOD MEMORY:                        
-                        - User preferences                       
-                        - User interests                        
-                        - User hobbies                       
-                        - User goals                        
-                        - User projects                       
-                        - User occupation or area of work                       
-                        - User technical experience
-                        - User's relationship status                       
-                        - Frequently used technologies                      
-                        - Important personal preferences                       
-                        - Names the user explicitly gives you                       
-                        - Devices, vehicles, computers, servers, or other projects                      
-                        - Long-term plans
-                        
-                        
-                        DO NOT STORE:                        
-                        - Temporary questions                       
-                        - One-time requests                        
-                        - Random facts                       
-                        - Information about other people                       
-                        - Secrets                       
-                        - Passwords                       
-                        - API keys                      
-                        - Authentication credentials                      
-                        - Sensitive financial information                      
-                        - Medical information                     
-                        - Anything inappropriate to retain                        
-                        
-                        EXISTING MEMORIES:                       
-                        ${existingMemoryText}
-                                               
-                        MEMORY KEYS:                       
-                        Each memory must have a short, stable key describing the concept.
-                                               
-                        Examples:                        
-                        favorite_programming_language                       
-                        discord_bot_name                       
-                        occupation                      
-                        favorite_color                       
-                        primary_operating_system                      
-                        current_project                       
-                        vehicle                      
-                        favorite_game
-                        
-                        
-                        IMPORTANT:                       
-                        If the user provides new information that changes an existing memory,                       
-                        use the SAME memory key.
-                        
-                        Example:                       
-                        Existing memory:                     
-                        [discord_bot_name] User's Discord bot is named Pixel.
-                        
-                        User says:                       
-                        "My Discord bot is actually called PixelBot now."
-                        
-                        Return:                       
-                        [
-                            {
-                                "key": "discord_bot_name",
-                                "memory": "User's Discord bot is named PixelBot."
-                            }
-                        ]
-                        
-                        
-                        Do NOT create a new key for the same concept.                       
-                        If the information is already contained in an existing memory,                       
-                        return nothing for that fact.       
-                        If the user says something that is genuinely new, create a new memory.
-                                              
-                        Return ONLY valid JSON.                        
-                        Format:                        
-                        [
-                            {
-                                "key": "memory_key",
-                                "memory": "Information worth remembering."
-                            }
-                        ]
-                        
-                        If there is nothing worth remembering:                       
-                        []
-                    `
-                },
-                contents: [
+            await openai.responses.create({
+                model: 'gpt-5.6-luna',
+
+                instructions: `
+                    You are Voxel's long-term memory manager.
+
+                    Your job is to identify useful, persistent facts about the user.
+
+                    Only remember information that is genuinely useful in future conversations.
+
+                    GOOD MEMORY:
+
+                    - User preferences
+                    - User interests
+                    - User hobbies
+                    - User goals
+                    - User projects
+                    - User occupation or area of work
+                    - User technical experience
+                    - User's relationship status
+                    - Frequently used technologies
+                    - Important personal preferences
+                    - Names the user explicitly gives you
+                    - Devices, vehicles, computers, servers, or other projects
+                    - Long-term plans
+
+                    DO NOT STORE:
+
+                    - Temporary questions
+                    - One-time requests
+                    - Random facts
+                    - Information about other people
+                    - Secrets
+                    - Passwords
+                    - API keys
+                    - Authentication credentials
+                    - Sensitive financial information
+                    - Medical information
+                    - Anything inappropriate to retain
+
+                    EXISTING MEMORIES:
+
+                    ${existingMemoryText}
+
+                    MEMORY KEYS:
+
+                    Each memory must have a short, stable key describing the concept.
+
+                    Examples:
+
+                    favorite_programming_language
+                    discord_bot_name
+                    occupation
+                    favorite_color
+                    primary_operating_system
+                    current_project
+                    vehicle
+                    favorite_game
+
+                    IMPORTANT:
+
+                    If the user provides new information that changes an existing memory,
+                    use the SAME memory key.
+
+                    Example:
+
+                    Existing memory:
+
+                    [discord_bot_name] User's Discord bot is named Pixel.
+
+                    User says:
+
+                    "My Discord bot is actually called PixelBot now."
+
+                    Return:
+
+                    [
+                        {
+                            "key": "discord_bot_name",
+                            "memory": "User's Discord bot is named PixelBot."
+                        }
+                    ]
+
+                    Do NOT create a new key for the same concept.
+
+                    If the information is already contained in an existing memory,
+                    return nothing for that fact.
+
+                    If the user says something that is genuinely new,
+                    create a new memory.
+
+                    Return ONLY valid JSON.
+
+                    Format:
+
+                    [
+                        {
+                            "key": "memory_key",
+                            "memory": "Information worth remembering."
+                        }
+                    ]
+
+                    If there is nothing worth remembering:
+
+                    []
+                `,
+
+                input: [
                     {
                         role: 'user',
-                        parts: [
-                            {
-                                text: `USER MESSAGE: ${prompt}
-                                AI RESPONSE: ${responseText}`
-                            }
-                        ]
+                        content: `
+                            USER MESSAGE:
+                            ${prompt}
+
+                            AI RESPONSE:
+                            ${responseText}
+                        `
                     }
                 ]
             });
 
-        const text = memoryResponse.text.trim();
+        const text = memoryResponse.output_text.trim();
 
-        // Remove Markdown code fences if Gemini
-        // happens to wrap the JSON in them.
         const cleaned = text
             .replace(/^```json\s*/i, '')
             .replace(/^```\s*/i, '')
@@ -232,6 +246,7 @@ async function extractMemories(
             memory.key.trim().length > 0 &&
             memory.memory.trim().length > 0
         );
+
     } catch (error) {
         console.error(
             'MEMORY EXTRACTION ERROR:',
