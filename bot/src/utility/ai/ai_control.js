@@ -1,6 +1,6 @@
 const getConnection = require('../../functions/database/connectDatabase');
 const OpenAI = require('openai');
-const config = require('../../config/config')
+const { getOpenAiApiKey } = require('../../utility/database/get_bot_config');
 
 const {
     getMemories,
@@ -8,10 +8,6 @@ const {
     formatMemoryContext,
     extractMemories
 } = require('./ai_memory');
-
-const openai = new OpenAI({
-    apiKey: config.bot.openAiApiKey
-})
 
 async function deleteAIData(guildId, userId) {
     const connection = await getConnection();
@@ -83,7 +79,8 @@ async function processAIMessage(prompt, userId, username, guildId, guildname) {
         // Ask OpenAI
         const responseText = await standardAIInstruction(
             messages,
-            memoryContext
+            memoryContext,
+            guildId
         );
 
         // Save OpenAI's Response
@@ -98,7 +95,8 @@ async function processAIMessage(prompt, userId, username, guildId, guildname) {
         const newMemories = await extractMemories(
             prompt,
             responseText,
-            storedMemories
+            storedMemories,
+            guildId
         );
 
         // Save any new memories
@@ -144,7 +142,14 @@ async function processJokesAIMessage() {
     }
 }
 
-async function processImageGeneration(prompt) {
+async function processImageGeneration(prompt, guildId) {
+
+    const openAiApiKey = await getOpenAiApiKey(guildId);
+
+    const openai = new OpenAI({
+        apiKey: openAiApiKey
+    })
+
     try {
         const result = await openai.images.generate({
             model: 'gpt-image-2',
@@ -190,7 +195,12 @@ async function splitMessage(text, maxLength = 2000) {
 
 // Ask Gemini - Standard AI Instruction
 
-async function standardAIInstruction(messages, memoryContext){
+async function standardAIInstruction(messages, memoryContext, guildId){
+    const openAiApiKey = await getOpenAiApiKey(guildId);
+
+    const openai = new OpenAI({
+        apiKey: openAiApiKey
+    })
     const response = await openai.responses.create({
         model: 'gpt-5.6-luna',
             instructions:
@@ -250,7 +260,12 @@ async function standardAIInstruction(messages, memoryContext){
 
 // Ask Gemini - Jokes AI Instruction
 
-async function jokesAIInstruction() {
+async function jokesAIInstruction(guildId) {
+    const openAiApiKey = await getOpenAiApiKey(guildId);
+
+    const openai = new OpenAI({
+        apiKey: openAiApiKey
+    })
     const response = await openai.responses.create({
         model: 'gpt-5.6-luna',
 
@@ -283,7 +298,12 @@ async function jokesAIInstruction() {
 
 // Ask Gemini - Roast AI Instruction
 
-async function roastAIInstruction() {
+async function roastAIInstruction(guildId) {
+    const openAiApiKey = await getOpenAiApiKey(guildId);
+
+    const openai = new OpenAI({
+        apiKey: openAiApiKey
+    })
     const response = await openai.responses.create({
         model: 'gpt-5.6-luna',
 

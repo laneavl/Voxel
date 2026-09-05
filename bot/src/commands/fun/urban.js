@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const config = require('../../config/config');
+const { getRapidAPIKey, getUrbanApiHost, getRedditApiHost} = require('../../utility/database/get_bot_config')
 const getEmbedColor = require('../../utility/database/get_embed_color');
 
 module.exports = {
@@ -20,14 +20,17 @@ module.exports = {
 
         await interaction.deferReply();
 
+        const rapidApiKey = await getRapidAPIKey(guildId);
+        const urbanApiHost = await getUrbanApiHost(guildId);
+
         try {
             const term = interaction.options.getString('term');
-            const url = `https://urban-dictionary7.p.rapidapi.com/v0/define?term=${term}`;
+            const url = `https://${urbanApiHost}/v0/define?term=${term}`;
             const options = {
                 method: 'GET',
                 headers: {
-                    'X-RapidAPI-Key': config.bot.rapidApiKey,
-                    'X-RapidAPI-Host': config.bot.urbanApiHost,
+                    'X-RapidAPI-Key': rapidApiKey,
+                    'X-RapidAPI-Host': urbanApiHost,
                     'Content-Type': 'application/json'
                 }
             };

@@ -121,6 +121,92 @@ module.exports = async (client) => {
 
                 return;
             }
+
+            let newXp = Number(level.xp) + xpToGive;
+            let newTotalXp = Number(level.total_xp) + xpToGive;
+            let newLevel = Number(level.level);
+
+            let leveledUp = false;
+
+            /*
+             * Handle one or multiple level-ups.
+             *
+             * Example:
+             * Level 2 needs 300 XP
+             * User currently has 290 XP
+             * They gain 25 XP
+             *
+             * 315 - 300 = 15 XP remaining
+             * New level = 3
+             */
+            while (newXp >= calculateLevelXp(newLevel)) {
+                const xpNeeded = calculateLevelXp(newLevel);
+
+                newXp -= xpNeeded;
+                newLevel++;
+
+                leveledUp = true;
+            }
+
+            /*
+             * Update the user's XP and level.
+             */
+            await connection.query(
+                `
+    UPDATE xp_system
+    SET
+        xp = ?,
+        total_xp = ?,
+        level = ?,
+        user_name = ?,
+        guild_name = ?
+    WHERE user_id = ?
+    AND guild_id = ?
+    `,
+                [
+                    newXp,
+                    newTotalXp,
+                    newLevel,
+                    username,
+                    guildName,
+                    userId,
+                    guildId
+                ]
+            );
+
+            /*
+             * Assign any level roles they now qualify for.
+             */
+            if (leveledUp) {
+                await assignLevelRoles(
+                    message,
+                    connection,
+                    guildId,
+                    newLevel
+                );
+
+                await sendLevelUpMessage(
+                    message,
+                    channelConfig,
+                    userConfig,
+                    newLevel
+                );
+            }
+
+            /*
+             * Commit transaction.
+             */
+            await connection.commit();
+
+            /*
+             * Start XP cooldown.
+             */
+            cooldowns.add(userId);
+
+            setTimeout(() => {
+                cooldowns.delete(userId);
+            }, 60000);
+
         } catch (error) {
             console.log(
                 'XP SYSTEM ERROR:',
@@ -160,7 +246,7 @@ async function sendLevelUpMessage(
     let channel = null;
 
     if (levelUpChannelId) {
-        channel = message.guild.cahnnels.cache.get(levelUpChannelId);
+        channel = message.guild.channels.cache.get(levelUpChannelId);
     }
 
     if (!channel || !(channel instanceof TextChannel)) {
@@ -176,16 +262,16 @@ async function sendLevelUpMessage(
         if (mentionEnabled) {
             if (newLevel % 3 === 0) {
                 await channel.send(
-                    `Congrats ${message.member}, you have just reached Level **${newLevel}**\n${warningMessage}`
+                    `Congrats ${message.member}, you have just reached Level **${newLevel}**\n${warningMessage}**`
                 );
             } else {
                 await channel.send(
-                    `Congrats ${message.member}, you have just reached Level **${newLevel}`
+                    `Congrats ${message.member}, you have just reached Level **${newLevel}**`
                 )
             }
         } else {
             await channel.send(
-                `Congrats **${message.author.tag}**, you have just reached Level **${newLevel}`
+                `Congrats **${message.author.tag}**, you have just reached Level **${newLevel}**`
             )
         }
 

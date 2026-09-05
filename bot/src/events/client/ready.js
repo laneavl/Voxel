@@ -1,5 +1,6 @@
-const config = require('../../config/config')
 const { Webhook } = require('discord-webhook-node');
+const { getWebhookURL, getOpenAiApiKey} = require('../../utility/database/get_bot_config');
+const OpenAI = require("openai");
 
 module.exports = {
     name: 'ready',
@@ -24,7 +25,8 @@ module.exports = {
             '-----------------------------------------------------------'
         );
 
-        const url = config.bot.webhookUrl;
+        const webhookURL = await getWebhookURL(client);
+        const url = webhookURL;
 
         if (url) {
             try {

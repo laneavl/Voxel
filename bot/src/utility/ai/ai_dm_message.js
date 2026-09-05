@@ -13,7 +13,8 @@ async function aiDMMessage (message) {
                 prompt,
                 message.author.id,
                 message.author.username,
-                'DM'
+                'DM',
+                'Direct Message'
             );
 
             const chunks = await splitMessage(responseText);
@@ -101,10 +102,10 @@ async function aiGuildMessage (message) {
                 try {
                     const responseText = await processAIMessage(
                         prompt,
-                        message.guild.name,
                         message.author.id,
                         message.author.username,
-                        message.guild.id
+                        message.guild.id,
+                        message.guild.name
                     );
 
                     const chunks = await splitMessage(responseText);

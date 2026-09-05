@@ -1,10 +1,6 @@
 const getConnection = require('../../functions/database/connectDatabase');
 const OpenAI = require('openai');
-const config = require('../../config/config');
-
-const openai = new OpenAI({
-    apiKey: config.bot.openAiApiKey
-});
+const { getOpenAiApiKey } = require('../../utility/database/get_bot_config');
 
 // Get the user's global long-term memories
 async function getMemories(guildId, userId) {
@@ -91,9 +87,16 @@ function formatMemoryContext(memories) {
 async function extractMemories(
     prompt,
     responseText,
-    existingMemories
+    existingMemories,
+    guildId
 ) {
     try {
+        const openAiApiKey = await getOpenAiApiKey(guildId);
+
+        const openai = new OpenAI({
+            apiKey: openAiApiKey
+        })
+
         const existingMemoryText =
             existingMemories.length > 0
                 ? existingMemories
